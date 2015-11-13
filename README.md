@@ -2,7 +2,7 @@ Motivation, Background, and Whitepaper
 --------------------------------
 
 Further discussion of the NIST casino beyond what is in this document is provided in `static/report.pdf`,
-and is available at http://45.63.64.229/static/report.pdf for download.  This includes discussions
+and is available at http://45.63.64.229:5000/static/report.pdf for download.  This includes discussions
 of the NIST Casino's security guarantees, as well as a comparison to previous work in trusted 
 cryptographic games of chance.
 
@@ -10,7 +10,7 @@ cryptographic games of chance.
 Sample Installation
 -------------------
 
-A sample deployment of the NIST casino can be accessed at http://45.63.64.229/
+A sample deployment of the NIST casino can be accessed at http://45.63.64.229:5000/
 
 Note that this deployment operates over HTTPS, and should not be trusted with games whose outcome affects
 real funds.
@@ -65,3 +65,96 @@ Casino page will display a winner.  Users can also verify the winner locally by 
 each block has the correct NIST beacon value and is correctly signed by both dealers and participants.
 
 An example chain is provided for use with the checking utility in the `example_chain` file.
+
+
+Determining Winners and Creating New Games
+-------------------------------------------
+
+As previously stated, winners can be computed entirely client side.  The rules by which winners are
+decided are written as an easily auditable Python program.  This program must implement three functions:
+
+```
+    def get_id(self)
+    def is_valid_ticket(self, ticket)
+    def get_game_result(self, chain, randint)
+
+```
+
+The first function, `get_id`, simply returns the plaintext game name (eg - 'Lotto').
+
+The second function, `is_valid_ticket`, takes a ticket object and returns whether the ticket should
+be considered valid.  Only valid tickets are considered in the computation of the final winner.  An 
+example of the valid ticket rules for the Lotto game are as follows:
+
+```
+    def is_valid_ticket(self, ticket):
+        try:
+            dollar_value = int(ticket)
+            return (dollar_value > 0)
+        except:
+            return False
+```
+
+where a valid ticket has a positive integer dollar amount associated with it.
+
+The last function, get_game_result, takes a Casino chain (downloadable from the house) and a random
+integer value.  This value is obtained from the NIST beacon API, using the block generated at the
+predetermined time and encoded in the first block of the casino chain.  It is intended to be easily
+auditable and simple.  Here it is for a basic lottery:
+
+```
+    def get_game_result(self, chain, randint):
+        result = ''
+        total_tickets = 0
+        # Calculate total number of tickets, ignoring first block
+        for block in chain[1:]:
+            block = json.loads(block)
+            for transaction in block['transactions']:
+                ticket = transaction['ticket']
+                if not self.is_valid_ticket(transaction['ticket']):
+                    return 'Error: invalid transaction ' + str(transaction)
+                total_tickets += int(ticket)
+        if (total_tickets == 0):
+            return 'No winner! No tickets sold :('
+        # Use entropy to calculate winning ticket
+        result += 'Total tickets: ' + str(total_tickets) + '\n'
+        winning_ticket = randint % total_tickets
+        result += 'Winning ticket: ' + str(winning_ticket) + '\n'
+        current_ticket = 0
+        # Find winning ticket in chain and return
+        for block in chain[1:]:
+            block = json.loads(block)
+            for transaction in block['transactions']:
+                ticket_value = int(transaction['ticket'])
+                if ((current_ticket + ticket_value) > winning_ticket) and (current_ticket <= winning_ticket):
+                    result += 'Won on index ' + str(current_ticket) + '\n'
+                    result += 'Winning transaction (ID ' + transaction['id'] + '):' + str(transaction)
+                    return result
+                current_ticket += ticket_value
+        return 'Error: No winner found.'
+```
+
+As previously mentioned, each ticket has a dollar amount.  The total number of dollars sold (total_tickets) is
+first calculated.  Then, the winner is calculated from the entropy modulo the sales.  The winning ticket is 
+identified in the chain and printed to the screen.
+
+
+Other Games
+-----------
+
+We also include CoinToss, a game where each user submits a ticket with a number of coin tosses they would like
+performed.  The result is a sequence of non-precomputable coin tosses, and can be used for remote coin tosses
+where fairness is critical.
+
+Other more advanced games, like Blackjack, Roulette, and traditional casino games, are easily encodable into
+the above framework.  For simplicity (both legal and technical), we do not include such games.
+
+
+Further Avoiding Precomputation
+--------------------------------
+
+The last block of any casino chain must be empty (with more empty blocks potentially
+required based on configuration).  This is to prevent manipulation of the last block by the house 
+after the NIST entropy source is revealed, and to give players the time to download the
+unaltered chain for independent output computation before the outcome is determined by
+the entropy reveal by NIST.
