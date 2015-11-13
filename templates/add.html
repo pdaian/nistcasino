@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}
+Thank you for submitting a ticket!
+{% endblock %}
+{% block content %}
+
+{{ message }}.  Make sure the parameters are the same as those generated on your local machine.  You can view the chain <a href="{{ url_for('view_chain', game=game_type, id=game_id) }}">here</a>.
+
+{% endblock %}

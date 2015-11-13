@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}
+Play {{ game.get_game_id() }} Now!<br>
+<small><a href="/static/project.zip">Run python get_ticket.py on this zip to generate a ticket offline</a><br><b>-OR-</b><br><a href="{{ url_for('gen_ticket', game = game.get_game_id(), id = game_id) }}">Let us generate a ticket for you (requires you to trust lottery coordinator)</a></small>
+{% endblock %}
+{% block content %}
+<form method="POST" action="/submit_new_ticket/{{game.get_game_id()}}/{{game_id}}" align="center">
+    <textarea id="payload" name="payload" rows=20 cols=80>Enter your ticket request here.  To create one, use the tool below.  We plan to automate this in-browser soon.</textarea><br><br>
+    <input type="submit"></input>
+</form><br>
+
+<h1> Game Rules (locally verifiable) </h1>
+{% if (game.get_game_id() == 'Lotto') %}
+<pre>
+    def get_game_result(self, chain, randint):
+        result = ''
+        total_tickets = 0
+        # Calculate total number of tickets, ignoring first block
+        for block in chain[1:]:
+            block = json.loads(block)
+            for transaction in block['transactions']:
+                ticket = transaction['ticket']
+                if not self.is_valid_ticket(transaction['ticket']):
+                    return 'Error: invalid transaction ' + str(transaction)
+                total_tickets += int(ticket)
+        if (total_tickets == 0):
+            return 'No winner! No tickets sold :('
+        # Use entropy to calculate winning ticket
+        result += 'Total tickets: ' + str(total_tickets) + '\n'
+        winning_ticket = randint % total_tickets
+        result += 'Winning ticket: ' + str(winning_ticket) + '\n'
+        current_ticket = 0
+        # Find winning ticket in chain and return
+        for block in chain[1:]:
+            block = json.loads(block)
+            for transaction in block['transactions']:
+                ticket_value = int(transaction['ticket'])
+                if ((current_ticket + ticket_value) > winning_ticket) and (current_ticket <= winning_ticket):
+                    result += 'Won on index ' + str(current_ticket) + '\n'
+                    result += 'Winning transaction (ID ' + transaction['id'] + '):' + str(transaction)
+                    return result
+                current_ticket += ticket_value
+        return 'Error: No winner found.'
+</pre>
+
+{% else %}
+<pre>
+    def get_game_result(self, chain, randint):
+        r = random
+        r.seed(randint)
+        result = ''
+        result += 'Using trusted rand int ' + str(randint) + ' as RNG seed- Requested tosses:\n'
+        for block in chain[1:]:
+            block = json.loads(block)
+            for transaction in block['transactions']:
+                ticket = transaction['ticket']
+                if not self.is_valid_ticket(transaction['ticket']):
+                    return 'Error: invalid transaction ' + str(transaction)
+                ticket_value = int(ticket)
+                result += transaction['id'] + ' coin tosses (1=heads): '
+                for i in range(0, ticket_value):
+                    result += str(r.randint(0, 1))
+                result += '\n'
+        return result
+</pre>
+
+{% endif %}
+
+{% endblock %}

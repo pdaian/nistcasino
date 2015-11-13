@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}
+Your ticket for {{ game.get_game_id() }}!
+{% endblock %}
+{% block content %}
+<h1> YOU MUST SAVE THE FOLLOWING TO CLAIM YOUR WIN: </h1><br>
+<pre>{{ priv_key }}</pre>
+<h1> Your transaction is as follows: </h1><br> Make sure a transaction with this payload is included in the lotto chain on the last screen.
+Press submit below to continue.<br>
+<pre style="white-space: pre-wrap;">{{ payload }}</pre><br>
+<form method="POST" action="/submit_new_ticket/{{game.get_game_id()}}/{{game_id}}" align="center">
+    <input type="hidden" id="payload" name="payload" value="{{ payload }}"></input>
+    <input type="submit"></input>
+</form><br>
+
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}
+Welcome to the NIST Casino!
+{% endblock %}
+{% block content %}
+<h2> The NIST casino is a provably fair casino</h2>based on the <a href="http://www.nist.gov/itl/csd/ct/nist_beacon.cfm">NIST Randomness Beacon</a>.  Every
+game result is determined by a deterministic function taking a random seed, sourced from a pre-agreed NIST beacon block.  A similar hashchain as the NIST beacon
+is use to provide proof of purchase for all games, and to ensure NIST casino cannot tamper with past ticket sale records.  For more information read the report <a href="/static/report.pdf">here</a>.
+For the source code and tools related to the NIST casino, use the download <a href="/static/project.zip">here</a>.  Note that the NIST casino is a very rough concept prototype with non-final UI,
+and should not be used in production.<br><br>
+  Welcome to the next generation of Internet gaming :).
+<h1> Choose a game:</h1>
+{% for game in games_available %}
+<b>{{game}}: <a href="{{ url_for('play', game=game) }}">Play</a></b>, <a href="{{ url_for('view_chain', game=game) }}">View latest chain</a><br>
+
+{% endfor %}
+
+{% endblock %}

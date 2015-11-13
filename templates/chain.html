@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}
+View chain raw for {{ game.get_game_id() }}, ID {{ game_id }}, Ending at {{ game.ending_timestamp }} ({{game.get_time_remaining()}}s left) 
+{% endblock %}
+
+{% block content %}
+{% if game.is_active() %}
+<h2>This game is now accepting new entries!  Use the play page to play.</h2>
+{% else %}
+{% if game.is_done() %}
+<h2>This game is over.  Results are displayed at the bottom of the page.</h2>
+{% else %}
+<h2>This game is bookkeeping.  No new entries are allowed, please hold for results.</h2>
+{% endif %}
+{% endif %}
+
+This raw chain can be used to prove the fairness of the game your are playing with our associated <a href="/static/project.zip">proving tool suite.</a>
+<pre style="white-space:pre-wrap;">
+{{ plaintext_chain|safe }}
+</pre>
+
+{% if game.is_done() %}
+{{ game.get_result() }}
+{% endif %}
+
+<h2>Save a copy of this chain including your transaction.  It serves as your proof of purchase.</h2>
+<p> To verify that all blocks in the chain are properly signed, timestamped with the beacon, hashed, all transactions included are valid, and the winner
+computed is correct/honest, use our <a href="/static/project.zip"> built-in checking tool</a>.  Simply save the above chain to a file by copy-pasting it and run python
+check.py.  Note that the game must be over for checking tool results to be guaranteed.
+
+{% endblock %}
