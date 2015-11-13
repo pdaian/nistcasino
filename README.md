@@ -73,7 +73,7 @@ Determining Winners and Creating New Games
 As previously stated, winners can be computed entirely client side.  The rules by which winners are
 decided are written as an easily auditable Python program.  This program must implement three functions:
 
-```
+```python
 def get_id(self)
 def is_valid_ticket(self, ticket)
 def get_game_result(self, chain, randint)
@@ -86,7 +86,7 @@ The second function, `is_valid_ticket`, takes a ticket object and returns whethe
 be considered valid.  Only valid tickets are considered in the computation of the final winner.  An 
 example of the valid ticket rules for the Lotto game are as follows:
 
-```
+```python
 def is_valid_ticket(self, ticket):
   try:
     dollar_value = int(ticket)
@@ -102,7 +102,7 @@ integer value.  This value is obtained from the NIST beacon API, using the block
 predetermined time and encoded in the first block of the casino chain.  It is intended to be easily
 auditable and simple.  Here it is for a basic lottery:
 
-```
+```python
 def get_game_result(self, chain, randint):
   result = ''
   total_tickets = 0
