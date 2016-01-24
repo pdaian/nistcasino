@@ -87,7 +87,7 @@ class Beacon(object):
         data = {}
         record = ET.fromstring(result)
         for child in record:
-            data[child.tag] = child.text
+            data[child.tag.replace("{http://beacon.nist.gov/record/0.1/}", "")] = child.text
 
         self.last_timestamp = data.get('timeStamp', None)
 
