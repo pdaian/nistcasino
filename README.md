@@ -2,7 +2,7 @@ Motivation, Background, and Whitepaper
 --------------------------------
 
 Further discussion of the NIST casino beyond what is in this document is provided in `static/report.pdf`,
-and is available at http://45.63.64.229:5000/static/report.pdf for download.  This includes discussions
+and is available at http://104.238.134.242:5000/static/report.pdf for download.  This includes discussions
 of the NIST Casino's security guarantees, as well as a comparison to previous work in trusted 
 cryptographic games of chance.
 
@@ -10,7 +10,7 @@ cryptographic games of chance.
 Sample Installation
 -------------------
 
-A sample deployment of the NIST casino can be accessed at http://45.63.64.229:5000/
+A sample deployment of the NIST casino can be accessed at http://104.238.134.242:5000/
 
 Note that this deployment operates over HTTPS, and should not be trusted with games whose outcome affects
 real funds.
